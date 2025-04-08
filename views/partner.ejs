@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Navbar -->
+    <%- include('../views/components/navbar.ejs') %>
+        <!-- Main Content -->
+        <main class="max-w-5xl mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-bold">Partner Portal</h1>
+                <a href="/addHotel" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
+                    + Add Hotel
+                </a>
+            </div>
+            <div class="space-y-6">
+                <% hotels.forEach(hotel=> { %>
+                    <div class="flex bg-gray-50 border border-gray-300 shadow-sm rounded-lg overflow-hidden">
+                        <img src="<%= hotel.imageLink %>" alt="<%= hotel.name %>" class="w-48 h-32 object-cover">
+
+                        <div class="p-4 flex-1">
+                            <div class="flex justify-between items-center">
+                                <h2 class="text-lg font-semibold">
+                                    <%= hotel.name %>
+                                </h2>
+                                <span class="text-blue-600 font-bold">
+                                    <%= hotel.price %> บ./คืน
+                                </span>
+                            </div>
+                            <p class="text-yellow-500">
+                                <%= '★' .repeat(hotel.rating) + '☆' .repeat(5 - hotel.rating) %>
+                            </p>
+                            <p class="text-gray-600 text-sm">
+                                <%= hotel.details %>
+                            </p>
+                        </div>
+
+                        <div class="flex flex-col space-y-2 p-4">
+                            <a href="#" onclick="updateHotel('<%= hotel.name %>')"
+                                class="bg-yellow-400 text-black text-center px-4 py-2 rounded hover:bg-yellow-500 transition">Edit</a>
+                            <button class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                                onclick="deleteHotel('<%= hotel.name %>')">Delete</button>
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                                onclick="viewBooking('<%= hotel.name %>')">ดูการจอง</button>
+                        </div>
+
+                    </div>
+                    <% }); %>
+            </div>
+        </main>
+        <div id="bookingPopup" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+            <div class="bg-white p-6 rounded-lg w-1/2">
+                <h3 class="text-2xl font-bold mb-4">ข้อมูลการจองของลูกค้า</h3>
+                <div id="bookingDetails"></div>
+                <button class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mt-4"
+                    onclick="closeBookingPopup()">ปิด</button>
+            </div>
+        </div>
+        <script>
+            async function viewBooking(hotelName) {
+                // ส่ง request เพื่อดึงข้อมูลการจองของโรงแรม
+                await fetch(`/getBookings`, {
+                    method: 'POST', // ใช้ GET เพราะไม่มีข้อมูลใน body
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hotelName: hotelName, name: localStorage.getItem("name") })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // แปลงข้อมูลการจองที่ได้มา
+                            const bookingDetails = data.bookings.map(booking => {
+                                return `
+                        <div class="mb-4">
+                            <p><strong>รหัสการจอง:</strong> ${booking.BookingNumber}</p>
+                            <p><strong>ชื่อผู้จอง:</strong> ${booking.name}</p>
+                            <p><strong>วันที่จอง:</strong> ${booking.checkIn}-${booking.checkOut}</p>
+                            <p><strong>ประเภทห้อง:</strong> ${booking.roomType} ห้อง</p>
+                            <p><strong>ราคา:</strong> ${booking.totalPriceP} บาท</p>
+                        </div>
+                    `;
+                            }).join('');
+                            // ใส่ข้อมูลการจองลงใน popup
+                            document.getElementById("bookingDetails").innerHTML = bookingDetails;
+                            document.getElementById("bookingPopup").classList.remove('hidden'); // เปิด popup
+                        } else {
+                            alert('ไม่พบข้อมูลการจอง');
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching bookings:", error);
+                        alert('เกิดข้อผิดพลาดในการดึงข้อมูลการจอง');
+                    });
+            }
+            function closeBookingPopup() {
+                document.getElementById("bookingPopup").classList.add('hidden');
+            }
+            function updateHotel(name) {
+                localStorage.setItem("hotelname", name);
+                window.location.href = '/edit';
+            }
+            function deleteHotel(name) {
+                if (confirm('Are you sure you want to delete this hotel?')) {
+                    fetch(`http://localhost:3000/deletePartnerHotel`, {
+                        method: 'DELETE',
+                        headers: { "Content-Type": "application/json" }, // ✅ เพิ่ม headers
+                        body: JSON.stringify({ hostname: localStorage.getItem("name"), name: name }) // ✅ แก้ body ให้ถูกต้อง
+                    })
+                        .then(response => response.json()) // ✅ ตรวจสอบว่าได้ JSON จริง
+                        .then(data => {
+                            if (data.success) {
+                                alert('Hotel deleted successfully');
+                                window.location.reload(); // ✅ รีโหลดหน้าใหม่
+                            } else {
+                                alert('Failed to delete hotel: ' + data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error deleting hotel:", error);
+                            alert('Error deleting hotel');
+                        });
+                }
+            }
+        </script>
+</body>
+</html>

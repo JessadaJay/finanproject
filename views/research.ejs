@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="font-sans bg-gray-50 min-h-screen">
+    <%- include('components/navbar.ejs') %>
+    
+    <div class="container mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">ผลการค้นหา: "<span class="text-blue-600"><%= query %></span>"</h2>
+        
+        <% if (hotels.length === 0) { %>
+            <div class="bg-white p-8 rounded-lg shadow-md text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <p class="text-xl text-gray-500">ไม่พบโรงแรมที่ตรงกับคำค้นหา</p>
+            </div>
+        <% } else { %>
+            <div class="grid grid-cols-1 gap-6">
+                <% hotels.forEach(hotel => { %>
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg flex flex-col md:flex-row">
+                        <div class="relative md:w-1/4">
+                            <img src="<%= hotel.imageLink %>" class="w-full h-48 md:h-full object-cover" alt="<%= hotel.name %>">
+                            <div class="absolute top-2 right-2 bg-white rounded-full px-2 py-1 text-sm font-semibold text-yellow-500">
+                                ⭐ <%= hotel.rating %>/5
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h4 class="text-lg font-bold text-gray-800 mb-2"><%= hotel.name %></h4>
+                                <div class="flex items-center mb-2 text-gray-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <p class="text-sm"><%= hotel.address %></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-4">
+                                <div class="flex items-center text-gray-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <p class="text-sm">ราคา: <span class="font-semibold text-green-600"><%= hotel.price %> บ./คืน</span></p>
+                                </div>
+                                <button 
+                                    onclick="window.location.href='/books/<%= encodeURIComponent(hotel.name) %>'" 
+                                    class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors">
+                                    ดูรายละเอียด
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

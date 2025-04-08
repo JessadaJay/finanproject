@@ -1,0 +1,84 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  background-color: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 15px;
+  width: 600px;
+  height: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 100px 30px;
+}
+
+.container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 15px;
+}
+
+.container_bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 20px;
+}
+
+.container-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px; /* ระยะห่างระหว่าง container */
+  height: 90vh;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 20px;
+}
+
+.stats-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 90px;
+  border-radius: 20px;
+  background-color: rgb(255, 255, 255);
+  padding: 15px;
+  box-shadow: 20px 20px 60px #e6e6e6, -20px -20px 60px #f3f3f3;
+}
+.heading {
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.bottom-wrapper {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center ;
+}
+.bottom-wrapper .star {
+  width: 30px;
+  fill: gold;
+}
+.bottom-wrapper .tag {
+  width: 27px;
+  fill: rgb(141, 214, 32);
+}
+.bottom-wrapper .thumb {
+  width: 27px;
+  fill: blueviolet;
+}
+.bottom-wrapper p {
+  font-size: 1.2em;
+  font-weight: 700;
+}

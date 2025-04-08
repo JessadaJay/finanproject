@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>โค้ดส่วนลด</title>
+  
+  <link rel="stylesheet" href="CSS/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+  <%- include('components/navbar.ejs') %>
+    <div class="flex flex-col items-center">
+      <div class="bg-white w-11/12 max-w-4xl mt-10 p-6 rounded-lg shadow-lg">
+        <h1 class="text-center text-2xl font-bold mb-6">โค้ดส่วนลด</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <% coupons.forEach(function(coupon) { %>
+            <div class="flex items-center border border-blue-500 rounded-lg overflow-hidden shadow-md">
+              <div class="bg-blue-500 text-white text-center px-6 py-4">
+                <p class="text-2xl font-bold">
+                  <%= coupon.discount %>%
+                </p>
+                <p class="text-lg">OFF</p>
+              </div>
+              <div class="border-l-2 border-dashed border-blue-500 h-16"></div>
+              <div class="flex-1 p-4 text-center">
+                <h3 class="text-lg font-bold">เมื่อจอง <%= coupon.nights %> คืนขึ้นไป</h3>
+                <p class="text-gray-600 text-sm">กรอก <span class="font-bold text-blue-600">
+                    <%= coupon.code %>
+                  </span> ในช่องกรอกโค้ด</p>
+              </div>
+            </div>
+            <% }); %>
+        </div>
+      </div>
+    </div>
+
+</body>
+
+</html>

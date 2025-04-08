@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navbar Example</title>
+    <link rel="stylesheet" href="/public/CSS/navbarstyle.css">
+    <link rel="stylesheet" href="/CSS/review.css">
+    <link rel="stylesheet" href="/CSS/comment.css">
+    
+</head>
+
+<body>
+    <%- include('../views/components/navbar.ejs') %>
+
+        <div class="container-wrapper">
+            <div class="container">
+                <img src="<%= hotel.imageLink %>" alt="Hotel Image"> <!-- ใช้ EJS แสดงลิงก์ของรูปภาพโรงแรม -->
+            </div>
+            <div class="container">
+                <h1>
+                    <%= hotel.name %>
+                </h1> <!-- แสดงชื่อโรงแรม -->
+
+                <div class="comment-box">
+                    <!-- Loop ผ่านรีวิวจากข้อมูลที่ส่งมา -->
+                    <% reviews.forEach(review=> { %>
+                        <div class="comment">
+                            <div class="stars">
+                                <!-- แสดงดาวตามคะแนนจากรีวิว -->
+                                <% for (let i=0; i < review.rating; i++) { %>
+                                    ⭐️
+                                    <% } %>
+                            </div>
+                            <div class="infos">
+                                <p class="date-time">
+                                    <%= new Date(review.date).toLocaleDateString() %>
+                                </p> <!-- แสดงวันที่รีวิว -->
+                                <p class="description">
+                                    <%= review.review %>
+                                </p> <!-- แสดงข้อความรีวิว -->
+                            </div>
+                            <div class="author">— <%= review.email %>
+                            </div> <!-- แสดงชื่อผู้รีวิว -->
+                        </div>
+                        <% }); %>
+                </div>
+
+                <div class="card">
+                    <div class="stats-wrapper">
+                        <p class="heading">Rating</p>
+                        <div class="bottom-wrapper">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="star">
+                                <path
+                                    d="M17.56 21a1 1 0 0 1-.46-.11L12 18.22l-5.1 2.67a1 1 0 0 1-1.45-1.06l1-5.63-4.12-4a1 1 0 0 1 .81-.68l5.7-.83 2.51-5.13a1 1 0 0 1 1.8 0l2.54 5.12 5.7.83a1 1 0 0 1 .81.68 1 1 0 0 1-.25 1l-4.12 4 1 5.63a1 1 0 0 1-.4 1 1 1 0 0 1-.62.18z">
+                                </path>
+                            </svg>
+                            <p class="count">
+                                <%= hotel.rating %>
+                            </p> <!-- แสดงคะแนนรวมของโรงแรม -->
+                        </div>
+                    </div>
+                    <div class="stats-wrapper">
+                        <p class="heading">Review</p>
+                        <div class="bottom-wrapper">
+                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" class="thumb">
+                                <path
+                                    d="M472.06 334l-144.16-6.13c-4.61-.36-23.9-1.21-23.9-25.87 0-23.81 19.16-25.33 24.14-25.88L472.06 270c12.67.13 23.94 14.43 23.94 32s-11.27 31.87-23.94 32z">
+                                </path>
+                            </svg>
+                            <p class="count">
+                                <%= reviews.length %>
+                            </p> <!-- แสดงจำนวนรีวิว -->
+                        </div>
+                    </div>
+                    <div class="stats-wrapper">
+                        <p class="heading">Sells</p>
+                        <div class="bottom-wrapper">
+                            <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" class="tag">
+                                <path
+                                    d="M448 183.8v-123A44.66 44.66 0 00403.29 16H280.36a30.62 30.62 0 00-21.51 8.89L13.09 270.58a44.86 44.86 0 000 63.34l117 117a44.84 44.84 0 0063.33 0l245.69-245.61A30.6 30.6 0 00448 183.8z">
+                                </path>
+                            </svg>
+                            <p class="count">2.1k</p> <!-- ตัวอย่างจำนวนการขายสินค้า -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</body>
+
+</html>

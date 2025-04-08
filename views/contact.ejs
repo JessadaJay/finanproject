@@ -1,0 +1,41 @@
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Navbar Example</title>
+    <link rel="stylesheet" href="CSS/style.css" />
+    <link rel="stylesheet" href="CSS/contactformstyle.css" />
+    <link rel="stylesheet" href="/public/CSS/navbarstyle.css">
+  </head>
+  <body>
+    <%- include('../views/components/navbar.ejs') %>
+    <form class="form" action="/contact" method="POST">
+      <p class="title">Contact</p>
+      <p class="message">Fill your contact details</p>
+      <div class="flex">
+        <label>
+          <input required="" placeholder="" type="text" class="input" name="firstname" />
+          <span>Firstname</span>
+        </label>
+        <label>
+          <input required="" placeholder="" type="text" class="input" name="lastname" />
+          <span>Lastname</span>
+        </label>
+      </div>
+      <label>
+        <input required="" placeholder="" type="email" class="input" name="email" />
+        <span>Email</span>
+      </label>
+      <label>
+        <input required="" placeholder="" type="phone" class="input" name="phone" />
+        <span>PhoneNumber</span>
+      </label>
+      <label>
+        <input required="" placeholder="" type="text" class="input" name="message" />
+        <span>Message</span>
+      </label>
+      <button class="submit">Submit</button>
+    </form>
+    
+  </body>
+</html>

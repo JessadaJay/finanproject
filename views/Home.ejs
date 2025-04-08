@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Canvas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for dropdown */
+        #suggestions {
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            position: absolute;
+        }
+
+        #suggestions.show {
+            display: block;
+        }
+
+        #suggestions li {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        #suggestions li:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+    <%- include('../views/components/navbar.ejs') %>
+
+        <section class="relative">
+            <img src="https://assets.brandinside.asia/uploads/2024/01/Lufthansa-Group-A220s.jpg" alt="Hotel View"
+                class="w-full h-96 object-cover">
+            <div
+                class="absolute inset-0 flex flex-col justify-center items-center text-white text-center bg-black bg-opacity-40">
+                <h2 class="text-4xl font-bold">HOTEL</h2>
+                <div class="mt-4 bg-white p-2 rounded flex flex-col max-w-xl w-full relative">
+                    <div class="flex space-x-2 w-full">
+                        <div class="relative w-full">
+                            <input type="search" id="searchInput" class="p-2 border rounded w-full text-black"
+                                placeholder="Search for hotels..." onkeyup="filterHotels()">
+                            <ul id="suggestions" class="mt-1 text-black text-left"></ul>
+                        </div>
+                        <button id="searchButton" class="bg-black text-white px-4 py-2 rounded">Search</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="p-8">
+            <h3 class="text-2xl font-bold mb-4">Recommended Hotels</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <% hotels.forEach(hotel=> { %>
+                    <div class="bg-gray-100 p-4 rounded shadow cursor-pointer" onclick="goToHotel('<%= hotel.name %>')">
+                        >
+                        <img src="<%= hotel.imageLink %>" class="w-full h-40 object-cover rounded"
+                            alt="<%= hotel.name %>">
+                        <h4 class="mt-2 font-bold">
+                            <%= hotel.name %>
+                        </h4>
+                        <div class="flex justify-between items-center mt-1">
+                            <span>ราคา: <%= hotel.price %> บ./คืน</span>
+                            <p class="stars">
+                                <% for (let i=0; i < 5; i++) { %>
+                                    <% if (i < hotel.rating) { %>★<% } else { %>☆<% } %>
+                                                <% } %>
+                            </p>
+                        </div>
+                        <p class="mt-1">สถานที่ตั้ง: <%= hotel.address %>
+                        </p>
+                    </div>
+                    <% }); %>
+            </div>
+        </section>
+
+        <script>
+            let hotels = [];
+
+            document.addEventListener('DOMContentLoaded', async function () {
+                try {
+                    const response = await fetch("/home1", {
+                        method: "GET",
+                        headers: { "Content-Type": "application/json" }
+                    });
+
+                    if (response.ok) {
+                        hotels = await response.json();
+                        console.log("Hotels loaded from API:", hotels);
+                    } else {
+                        console.error("Failed to fetch hotels from API");
+                        // Fallback data if API fails
+                        hotels = [
+                            { name: "Hotel Canvas Bangkok", address: "123 Sukhumvit Road, Bangkok", imageLink: "https://via.placeholder.com/150", price: "1000", rating: 4 },
+                            { name: "Canvas Resort Phuket", address: "456 Beach Road, Phuket", imageLink: "https://via.placeholder.com/150", price: "2000", rating: 5 },
+                            { name: "Hotel Canvas Chiang Mai", address: "789 Mountain View, Chiang Mai", imageLink: "https://via.placeholder.com/150", price: "1500", rating: 3 }
+                        ];
+                        console.log("Using fallback data:", hotels);
+                    }
+                } catch (error) {
+                    console.error("Error fetching hotels:", error);
+                }
+
+                // Add search button functionality
+                document.getElementById('searchButton').addEventListener('click', function () {
+                    const searchTerm = document.getElementById('searchInput').value;
+                    if (searchTerm) {
+                        window.location.href = `/search?query=${encodeURIComponent(searchTerm)}`;
+                    }
+                });
+
+                // Close suggestions when clicking outside
+                document.addEventListener('click', function (event) {
+                    if (event.target.id !== 'searchInput') {
+                        document.getElementById('suggestions').classList.remove('show');
+                    }
+                });
+            });
+
+            function goToHotel(hotelName) {
+                
+                window.location.href = `/books/${encodeURIComponent(hotelName)}`;
+            }
+
+            function filterHotels() {
+                let input = document.getElementById("searchInput").value.toLowerCase();
+                let suggestions = document.getElementById("suggestions");
+                suggestions.innerHTML = "";
+
+                if (input.length > 0) {
+                    let filteredHotels = hotels.filter(hotel =>
+                        hotel.name.toLowerCase().includes(input) ||
+                        hotel.address.toLowerCase().includes(input) // ค้นหาด้วยที่อยู่ด้วย
+                    );
+
+                    if (filteredHotels.length > 0) {
+                        suggestions.classList.add("show");
+                        filteredHotels.forEach(hotel => {
+                            let li = document.createElement("li");
+                            li.innerHTML = `<strong>${hotel.name}</strong><br><small>${hotel.address}</small>`; // แสดงที่อยู่ด้วย
+                            li.addEventListener("click", () => {
+                                document.getElementById("searchInput").value = hotel.name;
+                                suggestions.classList.remove("show");
+                                window.location.href = `/books/${encodeURIComponent(hotel.name)}`;
+                            });
+                            suggestions.appendChild(li);
+                        });
+                    } else {
+                        suggestions.classList.remove("show");
+                    }
+                } else {
+                    suggestions.classList.remove("show");
+                }
+            }
+
+        </script>
+</body>
+
+</html>

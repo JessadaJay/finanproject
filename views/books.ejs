@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="font-sans bg-gray-100">
+    <%- include('../views/components/navbar.ejs') %>
+
+        <main class="max-w-5xl mx-auto p-6">
+            <div class="flex flex-col md:flex-row gap-8 bg-white p-6 shadow-lg rounded-lg">
+                <div class="w-full md:w-1/2 h-80 bg-cover bg-center rounded-lg"
+                    style="background-image: url('<%= hotel.imageLink || " default_image.jpg" %>');"></div>
+                <div class="w-full md:w-1/2 space-y-4">
+                    <h2 class="text-3xl font-bold text-gray-800" >
+                        <%= hotel.name %>
+                    </h2>
+                    <p class="text-lg text-gray-600">ราคา <span class="text-xl font-semibold">
+                            <%= hotel.price %>
+                        </span> บ./คืน</p>
+                    <p class="text-gray-700">คุณสมบัติ:</p>
+                    <p class="text-gray-600">
+                        <%= hotel.details %>
+                    </p>
+                    <p class="text-gray-700">ที่ตั้ง: <%= hotel.address %>
+                    </p>
+                    <div class="text-yellow-500 text-lg">
+                        <% for (let i=0; i < 5; i++) { %>
+                            <%= i < hotel.rating ? '★' : '☆' %>
+                                <% } %>
+                    </div>
+                    <button class="bg-black text-white py-2 px-4 rounded hover:bg-gray-800"
+                        onclick="openBookingModal('<%= hotel.name%>')">จอง</button>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-2xl font-semibold text-gray-800 mb-4">รีวิว</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <% if (reviews.length < 1) { %>
+                        <div class="p-4 bg-white shadow rounded text-center">No comment</div>
+                        <% } %>
+                            <% reviews.forEach(review=> { %>
+                                <div class="p-4 bg-white shadow rounded">
+                                    <div class="text-yellow-500 text-lg">
+                                        <% for (let i=0; i < 5; i++) { %>
+                                            <%= i < review.rating ? '★' : '☆' %>
+                                                <% } %>
+                                    </div>
+                                    <h4 class="font-semibold text-gray-800">Review</h4>
+                                    <p class="text-gray-600">
+                                        <%= review.review %>
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        <%= review.email.split('@')[0] %> - <%= new
+                                                Date(review.date).toLocaleDateString() %>
+                                    </p>
+                                </div>
+                                <% }) %>
+                </div>
+                <% if (reviews.length> 4) { %>
+                    <p class="mt-4 text-blue-600 cursor-pointer underline"
+                        onclick="window.location.href='/review/<%= hotel.name %>'" >More Reviews</p>
+                    <% } %>
+                        <p class="mt-2 text-blue-600 cursor-pointer underline"
+                            onclick="window.location.href='/comment/<%= hotel.name %>'">Comment</p>
+            </div>
+        </main>
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+                <h5 class="text-xl font-bold mb-4">Booking Details</h5>
+                <form id="bookingForm" class="space-y-4">
+                    <label class="block">
+                        <span class="text-gray-700">Check-in Date</span>
+                        <input type="date" class="mt-1 block w-full p-2 border rounded" id="checkIn" required>
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700">Check-out Date</span>
+                        <input type="date" class="mt-1 block w-full p-2 border rounded" id="checkOut" required>
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700">Type of Room</span>
+                        <select class="mt-1 block w-full p-2 border rounded" id="roomType" required>
+                            <% hotel.rooms.forEach(function(room) { %>
+                                <option value="<%= room.type %>" data-price="<%= room.priceP %>">
+                                    <%= room.type %> - <%= room.priceP %> บาท/คืน
+                                </option>
+                                <% }) %>
+                        </select>
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700">Full Name</span>
+                        <input type="text" class="mt-1 block w-full p-2 border rounded" id="name" required>
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700">Phone Number</span>
+                        <input type="tel" class="mt-1 block w-full p-2 border rounded" id="telNum" required>
+                    </label>
+                    <label class="block">
+                        <span class="text-gray-700">Total Price</span>
+                        <input type="text" class="mt-1 block w-full p-2 border rounded" id="totalPrice" disabled>
+                    </label>
+                </form>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button class="bg-gray-500 text-white py-2 px-4 rounded"
+                        onclick="closeBookingModal()">Close</button>
+                    <button type="submit" class="bg-black text-white py-2 px-4 rounded" id="confirmBooking"
+                        onclick="showPaymentModal()">ชำระเงิน</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div id="paymentModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-96 max-h-screen overflow-y-auto">
+                <h5 class="text-xl font-bold mb-4">ชำระเงิน</h5>
+                <form id="paymentForm" class="space-y-4">
+                    <label class="block">
+                        <span class="text-gray-700">โค้ดส่วนลด (ถ้ามี)</span>
+                        <input type="text" class="mt-1 block w-full p-2 border rounded" id="promotionCode">
+                        <button type="button" class="mt-2 bg-gray-200 text-gray-800 py-1 px-2 rounded text-sm"
+                            onclick="applyPromotion()">ใช้โค้ด</button>
+                    </label>
+
+                    <div class="mt-4">
+                        <p class="font-semibold">วิธีการชำระเงิน</p>
+                        <div class="mt-2 space-y-2">
+                            <label class="flex items-center">
+                                <input type="radio" name="paymentMethod" value="creditCard" class="mr-2" checked
+                                    onclick="showPaymentFields('creditCard')">
+                                <span>บัตรเครดิต / เดบิต</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="paymentMethod" value="banking" class="mr-2"
+                                    onclick="showPaymentFields('banking')">
+                                <span>โอนเงินผ่านธนาคาร</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="paymentMethod" value="promptpay" class="mr-2"
+                                    onclick="showPaymentFields('promptpay')">
+                                <span>พร้อมเพย์</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Credit Card Fields -->
+                    <div id="creditCardFields" class="space-y-3">
+                        <label class="block">
+                            <span class="text-gray-700">หมายเลขบัตร</span>
+                            <input type="text" class="mt-1 block w-full p-2 border rounded"
+                                placeholder="XXXX XXXX XXXX XXXX" maxlength="19" id="cardNumber"
+                                oninput="formatCardNumber(this)">
+                        </label>
+                        <div class="flex gap-4">
+                            <label class="block w-1/2">
+                                <span class="text-gray-700">วันหมดอายุ</span>
+                                <input type="text" class="mt-1 block w-full p-2 border rounded" placeholder="MM/YY"
+                                    maxlength="5" id="expiryDate" oninput="formatExpiryDate(this)">
+                            </label>
+                            <label class="block w-1/2">
+                                <span class="text-gray-700">CVV</span>
+                                <input type="text" class="mt-1 block w-full p-2 border rounded" placeholder="XXX"
+                                    maxlength="3" id="cvv">
+                            </label>
+                        </div>
+                        <label class="block">
+                            <span class="text-gray-700">ชื่อบนบัตร</span>
+                            <input type="text" class="mt-1 block w-full p-2 border rounded" placeholder="FULL NAME"
+                                id="cardName">
+                        </label>
+                    </div>
+
+                    <!-- Banking Fields -->
+                    <div id="bankingFields" class="space-y-3 hidden">
+                        <label class="block">
+                            <span class="text-gray-700">เลือกธนาคาร</span>
+                            <select class="mt-1 block w-full p-2 border rounded" id="bankSelect">
+                                <option value="">-- เลือกธนาคาร --</option>
+                                <option value="kbank">กสิกรไทย</option>
+                                <option value="scb">ไทยพาณิชย์</option>
+                                <option value="bbl">กรุงเทพ</option>
+                                <option value="ktb">กรุงไทย</option>
+                                <option value="bay">กรุงศรีอยุธยา</option>
+                                <option value="tmb">ทหารไทยธนชาต</option>
+                            </select>
+                        </label>
+                        <div class="bg-gray-100 p-3 rounded text-center">
+                            <p class="font-semibold mb-2">บัญชีสำหรับโอนเงิน</p>
+                            <p id="bankAccountInfo" class="text-gray-800">กรุณาเลือกธนาคารก่อน</p>
+                        </div>
+                        <label class="block">
+                            <span class="text-gray-700">อัพโหลดสลิป</span>
+                            <input type="file" class="mt-1 block w-full p-2 border rounded" accept="image/*"
+                                id="slipUpload">
+                        </label>
+                    </div>
+
+                    <!-- PromptPay Fields -->
+                    <div id="promptpayFields" class="space-y-3 hidden">
+                        <div class="bg-gray-100 p-3 rounded flex flex-col items-center">
+                            <p class="font-semibold mb-2">QR Code สำหรับชำระเงินด้วย PromptPay</p>
+                            <div class="bg-white p-2 rounded-lg border border-gray-300 mb-2">
+                                <img src="/api/placeholder/200/200" alt="PromptPay QR Code" class="w-48 h-48 mx-auto"
+                                    id="promptpayQRCode">
+                            </div>
+                            <p class="text-sm text-gray-600">สแกนเพื่อชำระเงินจำนวน <span id="promptPayAmount">0</span>
+                                บาท</p>
+                            <p class="text-sm text-gray-600">PromptPay ID: 0891234567</p>
+                        </div>
+                        <label class="block">
+                            <span class="text-gray-700">ยืนยันรหัสอ้างอิงการชำระเงิน</span>
+                            <input type="text" class="mt-1 block w-full p-2 border rounded"
+                                placeholder="เช่น A123456789" id="promptpayRef">
+                        </label>
+                    </div>
+
+                    <div>
+                        <p class="font-semibold">สรุปรายการ</p>
+                        <div class="mt-2 border-t pt-2">
+                            <div class="flex justify-between">
+                                <span>ราคาห้องพัก:</span>
+                                <span id="roomPriceDisplay">0 บาท</span>
+                            </div>
+                            <div class="flex justify-between" id="discountRow" style="display: none;">
+                                <span>ส่วนลด:</span>
+                                <span id="discountDisplay">0 บาท</span>
+                            </div>
+                            <div class="flex justify-between font-bold mt-2 border-t pt-2">
+                                <span>ยอดรวม:</span>
+                                <span id="finalPriceDisplay">0 บาท</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button class="bg-gray-500 text-white py-2 px-4 rounded" onclick="backToBooking()">ย้อนกลับ</button>
+                    <button type="submit" class="bg-green-600 text-white py-2 px-4 rounded" id="confirmPayment"
+                        onclick="completePayment()">ยืนยันการชำระเงิน</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function openBookingModal(hotelName) {
+                document.getElementById("bookingModal").classList.remove("hidden");
+                localStorage.setItem("hotelNameA", hotelName);
+                console.log(localStorage.getItem("hotelNameA"))
+            }
+
+            function closeBookingModal() {
+                document.getElementById("bookingModal").classList.add("hidden");
+            }
+
+            function showPaymentModal() {
+                const checkIn = document.getElementById("checkIn").value;
+                const checkOut = document.getElementById("checkOut").value;
+                const roomTypeSelect = document.getElementById("roomType");
+                const roomType = roomTypeSelect.value;
+                const roomPrice = roomTypeSelect.options[roomTypeSelect.selectedIndex].dataset.price;
+                const name = document.getElementById("name").value;
+                const telNum = document.getElementById("telNum").value;
+                const totalPrice = document.getElementById("totalPrice").value;
+                
+                
+                // ตรวจสอบว่ากรอกครบหรือไม่
+                if (!checkIn || !checkOut || !roomType || !name || !telNum || !totalPrice) {
+                    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                    return;
+                }
+
+                // สร้าง Object ข้อมูลการจอง
+                const bookingData = {
+                    checkIn,
+                    checkOut,
+                    roomType,
+                    roomPrice,
+                    name,  // เก็บชื่อลูกค้า
+                    telNum,
+                    totalPrice
+                };
+
+                // บันทึกชื่อลูกค้าแยกอีกครั้งเพื่อให้แน่ใจว่าสามารถเข้าถึงได้โดยตรง
+                localStorage.setItem("name", name);
+
+                // บันทึกลง localStorage
+                localStorage.setItem("bookingInfo", JSON.stringify(bookingData));
+
+                console.log("Booking data saved to localStorage:", bookingData);
+
+                // Validate booking form first
+                const bookingForm = document.getElementById("bookingForm");
+                const requiredFields = bookingForm.querySelectorAll("[required]");
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value) {
+                        isValid = false;
+                        field.classList.add("border-red-500");
+                    } else {
+                        field.classList.remove("border-red-500");
+                    }
+                });
+
+                if (!isValid) {
+                    alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+                    return;
+                }
+
+                // Transfer price information to payment modal
+                document.getElementById("roomPriceDisplay").textContent = totalPrice;
+                document.getElementById("finalPriceDisplay").textContent = totalPrice;
+                document.getElementById("promptPayAmount").textContent = totalPrice.replace(" บาท", "");
+
+                // Hide booking modal and show payment modal
+                document.getElementById("bookingModal").classList.add("hidden");
+                document.getElementById("paymentModal").classList.remove("hidden");
+
+                // Show default payment method (credit card)
+                showPaymentFields('creditCard');
+            }
+            function updatePrice() {
+                let checkIn = new Date(document.getElementById("checkIn").value);
+                let checkOut = new Date(document.getElementById("checkOut").value);
+                let roomType = document.getElementById("roomType");
+                let pricePerNight = parseFloat(roomType.options[roomType.selectedIndex].dataset.price);
+
+                if (checkIn && checkOut && !isNaN(checkIn) && !isNaN(checkOut) && pricePerNight) {
+                    // ปรับให้คำนวณวันที่แบบเต็มวัน (ไม่มีเศษ)
+                    checkIn.setHours(0, 0, 0, 0);
+                    checkOut.setHours(0, 0, 0, 0);
+                    let nights = Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+                    if (nights > 0) {
+                        document.getElementById("totalPrice").value = (nights * pricePerNight) + " บาท";
+                    } else {
+                        document.getElementById("totalPrice").value = "Invalid Date Range";
+                    }
+                }
+            }
+            function showPaymentFields(method) {
+                // Hide all payment fields first
+                document.getElementById("creditCardFields").classList.add("hidden");
+                document.getElementById("bankingFields").classList.add("hidden");
+                document.getElementById("promptpayFields").classList.add("hidden");
+
+                // Show the selected method's fields
+                if (method === 'creditCard') {
+                    document.getElementById("creditCardFields").classList.remove("hidden");
+                } else if (method === 'banking') {
+                    document.getElementById("bankingFields").classList.remove("hidden");
+                } else if (method === 'promptpay') {
+                    document.getElementById("promptpayFields").classList.remove("hidden");
+                    generateQRCode();
+                }
+            }
+
+            function generateQRCode() {
+                // In a real application, this would generate a QR code based on the payment amount
+                // Here, we're just using a placeholder image
+                const amount = document.getElementById("totalPrice").value.replace(" บาท", "");
+                document.getElementById("promptPayAmount").textContent = amount;
+
+                // In real implementation, you would generate a QR code here
+                // document.getElementById("promptpayQRCode").src = "/generate-qr?amount=" + amount;
+            }
+
+            function formatCardNumber(input) {
+                // Remove non-digits
+                let value = input.value.replace(/\D/g, '');
+
+                // Add space after every 4 digits
+                let formattedValue = '';
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+
+                input.value = formattedValue;
+            }
+
+            function formatExpiryDate(input) {
+                // Remove non-digits
+                let value = input.value.replace(/\D/g, '');
+
+                // Format as MM/YY
+                if (value.length > 2) {
+                    input.value = value.substring(0, 2) + '/' + value.substring(2);
+                } else {
+                    input.value = value;
+                }
+            }
+
+            function backToBooking() {
+                document.getElementById("paymentModal").classList.add("hidden");
+                document.getElementById("bookingModal").classList.remove("hidden");
+            }
+
+            function applyPromotion() {
+                const promoCode = document.getElementById("promotionCode").value;
+                const roomPriceText = document.getElementById("totalPrice").value;
+                const roomPrice = parseFloat(roomPriceText.replace(" บาท", ""));
+
+                if (promoCode && !isNaN(roomPrice)) {
+                    // Example promotion logic - customize as needed
+                    let discount = 0;
+                    if (promoCode.toUpperCase() === "SAVE10") {
+                        discount = roomPrice * 0.1;
+                    } else if (promoCode.toUpperCase() === "SAVE20") {
+                        discount = roomPrice * 0.2;
+                    }
+
+                    if (discount > 0) {
+                        document.getElementById("discountRow").style.display = "flex";
+                        document.getElementById("discountDisplay").textContent = `-${discount.toFixed(0)} บาท`;
+                        const finalPrice = roomPrice - discount;
+                        document.getElementById("finalPriceDisplay").textContent = `${finalPrice.toFixed(0)} บาท`;
+                        document.getElementById("promptPayAmount").textContent = finalPrice.toFixed(0);
+                        alert("ใช้โค้ดส่วนลดสำเร็จ!");
+                    } else {
+                        alert("โค้ดส่วนลดไม่ถูกต้องหรือหมดอายุ");
+                    }
+                }
+            }
+
+            // Set bank account details when bank is selected
+            document.getElementById("bankSelect").addEventListener("change", function () {
+                const bank = this.value;
+                let accountInfo = "กรุณาเลือกธนาคาร";
+
+                if (bank === "kbank") {
+                    accountInfo = "ธนาคารกสิกรไทย<br>เลขที่บัญชี: 123-4-56789-0<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                } else if (bank === "scb") {
+                    accountInfo = "ธนาคารไทยพาณิชย์<br>เลขที่บัญชี: 987-6-54321-0<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                } else if (bank === "bbl") {
+                    accountInfo = "ธนาคารกรุงเทพ<br>เลขที่บัญชี: 111-2-33333-4<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                } else if (bank === "ktb") {
+                    accountInfo = "ธนาคารกรุงไทย<br>เลขที่บัญชี: 444-5-66666-7<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                } else if (bank === "bay") {
+                    accountInfo = "ธนาคารกรุงศรีอยุธยา<br>เลขที่บัญชี: 777-8-99999-0<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                } else if (bank === "tmb") {
+                    accountInfo = "ธนาคารทหารไทยธนชาต<br>เลขที่บัญชี: 222-3-44444-5<br>ชื่อบัญชี: บริษัท โรงแรม จำกัด";
+                }
+
+                document.getElementById("bankAccountInfo").innerHTML = accountInfo;
+            });
+
+            function completePayment() {
+                const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked').value;
+                let isValid = true;
+                let errorMessage = "";
+
+                // Validate based on payment method
+                if (selectedPayment === 'creditCard') {
+                    const cardNumber = document.getElementById("cardNumber").value;
+                    const expiryDate = document.getElementById("expiryDate").value;
+                    const cvv = document.getElementById("cvv").value;
+                    const cardName = document.getElementById("cardName").value;
+
+                    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
+                        isValid = false;
+                        errorMessage = "กรุณาระบุหมายเลขบัตรให้ถูกต้อง";
+                    } else if (!expiryDate || expiryDate.length < 5) {
+                        isValid = false;
+                        errorMessage = "กรุณาระบุวันหมดอายุบัตร";
+                    } else if (!cvv || cvv.length < 3) {
+                        isValid = false;
+                        errorMessage = "กรุณาระบุรหัส CVV";
+                    } else if (!cardName) {
+                        isValid = false;
+                        errorMessage = "กรุณาระบุชื่อที่ปรากฏบนบัตร";
+                    }
+                } else if (selectedPayment === 'banking') {
+                    const bank = document.getElementById("bankSelect").value;
+                    const slipUpload = document.getElementById("slipUpload").value;
+
+                    if (!bank) {
+                        isValid = false;
+                        errorMessage = "กรุณาเลือกธนาคาร";
+                    } else if (!slipUpload) {
+                        isValid = false;
+                        errorMessage = "กรุณาอัพโหลดสลิปการโอนเงิน";
+                    }
+                } else if (selectedPayment === 'promptpay') {
+                    const promptpayRef = document.getElementById("promptpayRef").value;
+
+                    if (!promptpayRef) {
+                        isValid = false;
+                        errorMessage = "กรุณาระบุรหัสอ้างอิงการชำระเงิน";
+                    }
+                }
+
+                if (isValid) {
+                    // สร้างและเก็บหมายเลขการจอง
+                    const bookingNumber = generateBookingNumber();
+
+                    // บันทึกหมายเลขการจองแยกอีกครั้งเพื่อให้แน่ใจว่าสามารถเข้าถึงได้โดยตรง
+                    localStorage.setItem("bookingNumber", bookingNumber);
+
+                    // ดึงข้อมูลการจองจาก localStorage
+                    const bookingInfo = JSON.parse(localStorage.getItem("bookingInfo"));
+
+                    // เพิ่มหมายเลขการจองลงในข้อมูล
+                    bookingInfo.bookingNumber = bookingNumber;
+
+                    // บันทึกข้อมูลที่อัปเดตกลับไปที่ localStorage
+                    localStorage.setItem("bookingInfo", JSON.stringify(bookingInfo));
+
+                    alert("การชำระเงินเสร็จสมบูรณ์! หมายเลขการจองของคุณคือ: " + bookingNumber);
+                    document.getElementById("paymentModal").classList.add("hidden");
+
+                    // ฟังก์ชัน async เพื่อเรียก fetch API
+                    async function sendBookingData() {
+                        try {
+                            // สร้างข้อมูลการจองที่จะส่งไปยังเซิร์ฟเวอร์
+                            const bookingData = {
+                                BookingNumber: localStorage.getItem("bookingNumber"), // ใช้ตัวแปรตามที่ระบุ
+                                name: localStorage.getItem("name"), // ดึงชื่อจาก localStorage โดยตรง
+                                telNum: JSON.parse(localStorage.getItem("bookingInfo")).telNum,
+                                hotelName: localStorage.getItem("hotelNameA"),
+                                checkIn: JSON.parse(localStorage.getItem("bookingInfo")).checkIn,
+                                checkOut: JSON.parse(localStorage.getItem("bookingInfo")).checkOut,
+                                roomType: JSON.parse(localStorage.getItem("bookingInfo")).roomType,
+                                roomPrice: Number(JSON.parse(localStorage.getItem("bookingInfo")).roomPrice), // แปลงเป็น Number
+                                totalPriceP: Number(JSON.parse(localStorage.getItem("bookingInfo")).totalPrice.replace(" บาท", "")) // แปลงเป็น Number และตัด "บาท" ออก
+                            };
+
+                            const response = await fetch("/booking", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(bookingData)
+                            });
+
+                            if (!response.ok) {
+                                throw new Error("เกิดข้อผิดพลาดในการส่งข้อมูล");
+                            }
+
+                            console.log("ส่งข้อมูลสำเร็จ!");
+                        } catch (error) {
+                            console.error("Error:", error);
+                            alert("เกิดข้อผิดพลาดในการส่งข้อมูล โปรดลองอีกครั้ง");
+                        }
+                    }
+
+                    // เรียกใช้ฟังก์ชัน async
+                    sendBookingData();
+                } else {
+                    alert(errorMessage);
+                }
+            }
+            function generateBookingNumber() {
+                return "BK" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            }
+
+            document.getElementById("roomType").addEventListener("change", updatePrice);
+            document.getElementById("checkIn").addEventListener("change", updatePrice);
+            document.getElementById("checkOut").addEventListener("change", updatePrice);
+
+            function updatePrice() {
+                let checkIn = new Date(document.getElementById("checkIn").value);
+                let checkOut = new Date(document.getElementById("checkOut").value);
+                let roomType = document.getElementById("roomType");
+                let pricePerNight = roomType.options[roomType.selectedIndex].dataset.price;
+
+                if (checkIn && checkOut && !isNaN(checkIn) && !isNaN(checkOut) && pricePerNight) {
+                    let nights = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
+                    if (nights > 0) {
+                        document.getElementById("totalPrice").value = (nights * pricePerNight) + " บาท";
+                    } else {
+                        document.getElementById("totalPrice").value = "Invalid Date Range";
+                    }
+                }
+            }
+        </script>
+</body>
+
+</html>

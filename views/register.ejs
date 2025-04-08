@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center h-screen bg-gray-100">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-96 text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Register</h1>
+        <form>
+            <label class="block text-left text-gray-600 text-sm font-medium">Email/Tel</label>
+            <input type="text" name="email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <label class="block text-left text-gray-600 text-sm font-medium">Password</label>
+            <input type="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <label class="block text-left text-gray-600 text-sm font-medium">Re-Enter Password</label>
+            <input type="password" name="confirmPassword" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <label class="block text-left text-gray-600 text-sm font-medium">First Name</label>
+            <input type="text" name="name" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <label class="block text-left text-gray-600 text-sm font-medium">Last Name</label>
+            <input type="text" name="lastname" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+            
+            <label class="block text-left text-gray-600 text-sm font-medium">Role</label>
+            <select name="role" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-6">
+                <option value="customer">Customer</option>
+                <option value="partner">Partner</option>
+            </select>
+        </form>
+        <button id="next" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition mb-4">Register</button>
+        <button id="login" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition" onclick="window.location.href='/login'">Login</button>
+    </div>
+    <script>
+        document.getElementById("next").addEventListener("click", async () => {
+            const email = document.querySelector("input[name='email']").value;
+            const password = document.querySelector("input[name='password']").value;
+            const confirmPassword = document.querySelector("input[name='confirmPassword']").value;
+            const name = document.querySelector("input[name='name']").value;
+            const lastname = document.querySelector("input[name='lastname']").value;
+            const role = document.querySelector("select[name='role']").value;
+            
+            if (!email || !password || !confirmPassword || !name || !lastname || !role) {
+                alert("กรุณากรอกข้อมูลให้ครบ");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("รหัสผ่านไม่ตรงกัน");
+                return;
+            }
+    
+            const response = await fetch("/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ email, password, name, lastname, role })
+            });
+            const data = await response.json();
+            alert(data.message || data.error);
+            if (response.ok) {
+                window.location.href = "/login";
+            }
+        });
+    </script>
+</body>
+</html>

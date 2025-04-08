@@ -1,0 +1,120 @@
+.search {
+    display: flex;
+    justify-content: center;
+    border-radius: 20px;
+    margin-top: 20px;
+}
+
+.search input {
+    width: 30%;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+}
+
+#hotdeals {
+    margin-left: 30px;
+    font-size: 22px;
+    color: rgb(253, 254, 255);
+}
+
+.list-container {
+    display: flex;
+    padding: 30px;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.list {
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+    padding: 10px;
+    background-color: white;
+    overflow: hidden;
+    width: 200px;
+    height: 200px;
+    cursor: pointer;
+    /* Ensure cursor is pointer on hover */
+}
+
+main {
+    display: block;
+    height: 75vh;
+    background-image: url(https://assets.brandinside.asia/uploads/2024/01/Lufthansa-Group-A220s.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.list img {
+    display: block;
+    width: 100%;
+    height: 150px;
+    object-fit: fill;
+    border-radius: 25px 25px 0 0;
+}
+
+.details {
+    padding: 15px;
+    width: 100%;
+}
+
+.stars {
+    color: gold;
+    font-size: 20px;
+    margin: 5px 0;
+}
+
+.title-price {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    font-weight: bold;
+    flex-direction: column;
+}
+
+.review {
+    font-size: 14px;
+    color: gray;
+}
+
+footer {
+    background-color: rgb(18, 73, 110);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 70px;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+}
+
+.footerbutton a {
+    justify-content: space-evenly;
+    color: white;
+}
+
+#hotdeals {
+    padding-left: 150px;
+    margin-bottom: 0;
+}
+
+/* Hover effect for list items */
+.list:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Hover effect for footer links */
+.footerbutton a:hover {
+    color: #ffcc00;
+    text-decoration: underline;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}

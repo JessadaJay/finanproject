@@ -1,0 +1,195 @@
+<script src="https://cdn.tailwindcss.com"></script>
+
+<header class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">HOTEL CANVAS</h1>
+    <nav>
+        <ul class="flex space-x-4">
+            <li><a href="/home" class="hover:text-blue-500">Home</a></li>
+            <li><a href="/promotion" class="hover:text-blue-500">Promotions</a></li>
+            <li><a href="/contact" class="hover:text-blue-500">Contact</a></li>
+            <li id="partner-menu-item" class="hidden">
+                <a href="#" onclick="redirectToPartner()" class="hover:text-blue-500">Partner</a>
+            </li>
+        </ul>
+    </nav>
+    <li><a href="#" id="welcome-btn"><i class="fa-solid fa-user" style="margin-right: 5px;"></i><span id="user-name">Welcome, Guest</span></a></li>
+</header>
+
+<div id="logoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden transition-opacity duration-300 ease-in-out z-50">
+    <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full transform scale-95 transition-transform duration-300 ease-in-out">
+        <div class="flex items-center mb-4">
+            <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-800">Log Out</h2>
+        </div>
+
+        <!-- ✅ แสดงชื่อโรงแรม -->
+        <div id="hotel-name-display" class="text-center font-semibold text-lg text-indigo-600 mb-4 hidden">
+            โรงแรม: <span id="hotel-name-text"></span>
+        </div>
+
+        <p class="text-gray-600 mb-4">Are you sure you want to log out?</p>
+
+        <div id="booking-info" class="mb-4 hidden">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-gray-800">รายการจองของคุณ</span>
+            </div>
+            <div id="booking-number-list" class="max-h-80 overflow-y-auto pr-2"></div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <button id="cancel-btn"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                Cancel
+            </button>
+            <button id="logout-btn"
+                    class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                Log Out
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function fetchBookingNumber() {
+    const name = localStorage.getItem("name");
+    if (!name) return;
+
+    try {
+        const response = await fetch("/getBooking", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name }),
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const bookings = data.bookings || [];
+            console.log(bookings)
+            const bookingListElement = document.getElementById("booking-number-list");
+            bookingListElement.innerHTML = ""; // Clear old content
+
+            if (bookings.length > 0) {
+                bookings.forEach(booking => {
+                    const bookingCard = document.createElement("div");
+                    bookingCard.className = "bg-white border border-gray-200 rounded-lg p-3 mb-2 shadow-sm";
+
+                    const checkInDate = new Date(booking.checkIn).toLocaleDateString('th-TH');
+                    const checkOutDate = new Date(booking.checkOut).toLocaleDateString('th-TH');
+
+                    bookingCard.innerHTML = `
+
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-blue-600">${booking.BookingNumber}</span>
+                            <span class="font-bold text-blue-600">${booking.hotelName}</span>
+                            <span class="text-xs text-gray-500">${new Date(booking.createdAt).toLocaleDateString('th-TH')}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1 text-sm">
+                            <div class="text-gray-600">ห้อง:</div>
+                            <div class="font-medium">${booking.roomType}</div>
+
+                            <div class="text-gray-600">เช็คอิน:</div>
+                            <div class="font-medium">${checkInDate}</div>
+
+                            <div class="text-gray-600">เช็คเอาท์:</div>
+                            <div class="font-medium">${checkOutDate}</div>
+
+                            <div class="text-gray-600">ราคาต่อคืน:</div>
+                            <div class="font-medium">${booking.roomPrice.toLocaleString()} บาท</div>
+
+                            <div class="text-gray-600">ราคารวม:</div>
+                            <div class="font-medium text-green-600">${booking.totalPriceP.toLocaleString()} บาท</div>
+                        </div>
+                    `;
+                    bookingListElement.appendChild(bookingCard);
+                });
+
+                document.getElementById("booking-info").classList.remove("hidden");
+            } else {
+                bookingListElement.innerHTML = "<div class='text-center text-gray-500 py-2'>ไม่พบข้อมูลการจอง</div>";
+                document.getElementById("booking-info").classList.remove("hidden");
+            }
+        } else {
+            console.error("Failed to fetch booking data.");
+        }
+    } catch (error) {
+        console.error("Error fetching booking data:", error);
+    }
+}
+
+
+    function redirectToPartner() {
+        const hostname = localStorage.getItem("name") || "default";
+        window.location.href = `/partner/${hostname}`;
+    }
+    window.onload = function () {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const content = document.querySelector('.content');
+        menuToggle.addEventListener('click', function () {
+            content.classList.toggle('active');
+        });
+    }
+
+    // ฟังก์ชันดึงข้อมูลผู้ใช้จาก Local Storage (หรือจาก API ก็ได้)
+    function getUserEmail() {
+        return localStorage.getItem("userEmail") || ""; // ดึงอีเมลจาก localStorage
+    }
+
+    // ฟังก์ชันดึงข้อมูล role จาก Local Storage
+    function getUserRole() {
+        return localStorage.getItem("role") || ""; // ดึง role จาก localStorage
+    }
+
+    // ฟังก์ชันอัปเดตชื่อผู้ใช้
+    function updateUserName() {
+        const email = getUserEmail();
+        if (email) {
+            const username = email.split("@")[0]; // ตัด '@' และโดเมนออก
+            document.getElementById("user-name").innerText = `Welcome, ${username}`;
+        } else {
+            document.getElementById("user-name").innerText = `Welcome, Guest`;
+        }
+
+        // ตรวจสอบว่า user เป็น "partner" หรือไม่
+        const role = getUserRole();
+        if (role === 'partner') {
+            document.getElementById("partner-menu-item").classList.remove('hidden'); // Show the partner menu item
+        } else {
+            document.getElementById("partner-menu-item").classList.add('hidden'); // Hide the partner menu item
+        }
+    }
+
+    // เรียกใช้งานเมื่อโหลดหน้าเว็บ
+    document.addEventListener("DOMContentLoaded", updateUserName);
+
+    // Popup modal logic for log out
+    const welcomeBtn = document.getElementById('welcome-btn');
+    const logoutModal = document.getElementById('logoutModal');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    welcomeBtn.addEventListener('click', function () {
+    logoutModal.classList.toggle('hidden'); // Toggle modal visibility
+    if (!logoutModal.classList.contains('hidden')) {
+        fetchBookingNumber(); // โหลด BookingNumber ทุกครั้งเมื่อ modal แสดง
+    }
+});
+
+
+    cancelBtn.addEventListener('click', function() {
+        logoutModal.classList.add('hidden'); // Hide the modal
+    });
+
+    logoutBtn.addEventListener('click', function() {
+        // Clear the user email and role from localStorage and update UI
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("role");
+        updateUserName(); // Update the "Welcome" text to "Guest" and hide partner menu
+        logoutModal.classList.add('hidden'); // Hide the modal
+    });
+</script>

@@ -1,0 +1,125 @@
+/* แก้ไขส่วนของ .black-friday-component */
+.black-friday-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 300px;
+  max-width: 400px;
+  margin: 20px;
+}
+
+/* แก้ไขส่วนของ .coupon */
+.black-friday-component .coupon {
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  border: 2px solid #003366;
+  transform: scale(0.7);
+  transform-origin: bottom center;
+  box-sizing: border-box; /* เพื่อให้ขอบของ coupon อยู่ในขอบเขตที่กำหนด */
+}
+
+/* แก้ไขส่วนของ .box */
+.black-friday-component .coupon .box {
+  height: 100%;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #000000;
+  padding: 1rem;
+}
+
+/* การจัดรูปแบบ text ใน .box */
+.black-friday-component .coupon .box span {
+  display: block;
+  font-weight: bold;
+  font-size: 1.8rem;
+}
+
+/* แก้ไขส่วนของ .divider */
+.black-friday-component .coupon .divider {
+  display: block;
+  width: 0;
+  height: 160px;
+  border: 3px dashed transparent;
+  border-right-color: #003366;
+  margin-left: 10px; /* เพิ่มช่องว่างระหว่าง box กับ divider */
+}
+
+/* แก้ไขส่วนของ .content */
+.black-friday-component .coupon .content {
+  padding: 1rem;
+  flex: 1;
+  width: 330px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* การจัดรูปแบบของ title ใน .content */
+.black-friday-component .coupon .content h3 {
+  font-weight: 600;
+  font-size: 2rem;
+  height: 34px;
+  align-items: center;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+/* เพิ่มการจัดรูปแบบ span.end */
+.black-friday-component .coupon .content h3 span.end {
+  width: 30px;
+}
+
+/* แก้ไขส่วนของ .content p */
+.black-friday-component .coupon .content p {
+  font-weight: 400;
+  font-style: normal;
+  color: #959595;
+  font-size: 1rem;
+  line-height: 1.25rem;
+  text-align: center; /* จัดให้ข้อความพอดีกับพื้นที่ */
+}
+
+/* การจัดการลิงก์ใน .content */
+.black-friday-component .coupon .content p a {
+  font-style: italic;
+  color: #003366;
+  text-transform: capitalize;
+  word-spacing: 0.03rem;
+  font-weight: bolder;
+  text-decoration: underline;
+  text-underline-offset: 0.05rem;
+  text-decoration-color: #003366;
+}
+
+/* สไตล์สำหรับ .container */
+.container {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  padding: 20px;
+  text-align: center;
+  border-radius: 15px;
+  width: auto; 
+  margin: 30px 70px 30px 70px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  overflow: auto;
+}
+
+/* การจัดการ .container_bottom */
+.container_bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  padding: 20px;
+}

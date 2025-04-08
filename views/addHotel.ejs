@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">Hotel Register</h1>
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label class="block font-semibold">Image Link</label>
+                <input type="text" name="imageLink" class="w-full p-2 border rounded-md focus:outline-blue-400">
+            </div>
+            <div>
+                <label class="block font-semibold">Name</label>
+                <input type="text" name="name" class="w-full p-2 border rounded-md focus:outline-blue-400">
+            </div>
+            <div>
+                <label class="block font-semibold">Price</label>
+                <input type="number" name="price" class="w-full p-2 border rounded-md focus:outline-blue-400">
+            </div>
+
+            <!-- Modified Address Section -->
+            <div class="space-y-2">
+                <label class="block font-semibold">Address</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm text-gray-600">บ้านเลขที่</label>
+                        <input type="text" id="houseNumber" class="w-full p-2 border rounded-md focus:outline-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600">ตำบล</label>
+                        <input type="text" id="subDistrict" class="w-full p-2 border rounded-md focus:outline-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600">อำเภอ</label>
+                        <input type="text" id="district" class="w-full p-2 border rounded-md focus:outline-blue-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600">จังหวัด</label>
+                        <input type="text" id="province" class="w-full p-2 border rounded-md focus:outline-blue-400">
+                    </div>
+                </div>
+                <!-- Hidden field to store the combined address -->
+                <input type="hidden" name="address" id="combinedAddress">
+            </div>
+
+            <div>
+                <label class="block font-semibold">Details</label>
+                <input type="text" name="details" class="w-full p-2 border rounded-md focus:outline-blue-400">
+            </div>
+
+            <div>
+                <label class="block font-semibold">Rooms</label>
+                <div id="roomsContainer" class="space-y-2"></div>
+                <button type="button" id="addRoom"
+                    class="mt-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">+ Add Room</button>
+            </div>
+
+            <button id="reg" type="submit"
+                class="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("addRoom").addEventListener("click", () => {
+            const container = document.getElementById("roomsContainer");
+            const roomDiv = document.createElement("div");
+            roomDiv.classList.add("flex", "gap-2", "items-center");
+
+            roomDiv.innerHTML = `
+                <input type="text" placeholder="Room Type" name="roomType[]" class="p-2 border rounded-md flex-1">
+                <input type="number" placeholder="Price Per Night" name="roomPrice[]" class="p-2 border rounded-md w-24">
+                <button type="button" class="remove-room bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600">X</button>
+            `;
+
+            container.appendChild(roomDiv);
+
+            roomDiv.querySelector(".remove-room").addEventListener("click", () => {
+                container.removeChild(roomDiv);
+            });
+        });
+
+        document.getElementById("registerForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            // Combine address fields into a single string with commas
+            const houseNumber = document.getElementById("houseNumber").value.trim();
+            const subDistrict = document.getElementById("subDistrict").value.trim();
+            const district = document.getElementById("district").value.trim();
+            const province = document.getElementById("province").value.trim();
+
+            // Create combined address string with comma separation
+            const combinedAddress = [houseNumber, subDistrict, district, province]
+                .filter(part => part) // Remove empty parts
+                .join(", ");
+
+            // Set the combined address to the hidden field
+            document.getElementById("combinedAddress").value = combinedAddress;
+
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            const rooms = [];
+            const type = formData.getAll("roomType[]");
+            const priceP = formData.getAll("roomPrice[]");
+
+            for (let i = 0; i < type.length; i++) {
+                if (type[i] && priceP[i]) {
+                    rooms.push({ type: type[i], priceP: Number(priceP[i]) });
+                }
+            }
+            data.rating = 5;
+            data.hostname = localStorage.getItem("name");
+            data.rooms = rooms;
+            console.log(data)
+            const response = await fetch("/addHotel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.href = "/partner";
+            } else {
+                const errorData = await response.json();
+                console.error("Error:", errorData);
+                // You can show some user feedback here too
+            }
+
+
+        });
+    </script>
+</body>
+
+</html>
